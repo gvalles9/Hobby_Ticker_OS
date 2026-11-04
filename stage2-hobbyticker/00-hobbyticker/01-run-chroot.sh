@@ -24,11 +24,9 @@ cd "$INSTALL_DIR"
 echo "Creating Python virtual environment..."
 python3 -m venv env
 
-# Upgrade pip
+# Upgrade pip and install common dependencies
 ./env/bin/pip install --upgrade pip
-
-# Install common and architecture-specific dependencies
-echo "Installing Python dependencies..."
+echo "Installing Python dependencies from platforms/pi/requirements.txt..."
 ./env/bin/pip install -r platforms/pi/requirements.txt
 
 # Build and install rpi-rgb-led-matrix bindings (for Pi 3, Pi 4, Pi Zero)
@@ -38,10 +36,23 @@ if [ ! -d "$RGB_MATRIX_DIR" ]; then
 fi
 cd "$RGB_MATRIX_DIR"
 git checkout "$RGB_MATRIX_COMMIT"
+make clean
 make build-python PYTHON="$INSTALL_DIR/env/bin/python"
 
-SITE_PACKAGES=$("$INSTALL_DIR/env/bin/python" -c 'import site; print(site.getsitepackages()[0])')
+SITE_PACKAGES=$(find "$INSTALL_DIR/env/lib" -type d -name "site-packages" | head -n 1)
+if [ -z "$SITE_PACKAGES" ]; then
+    echo "Error: Could not locate site-packages directory"
+    exit 1
+fi
+echo "Copying rgbmatrix to $SITE_PACKAGES..."
 cp -r bindings/python/rgbmatrix "$SITE_PACKAGES/"
+
+# Verify rgbmatrix import
+if ! "$INSTALL_DIR/env/bin/python" -c 'from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics' 2>/dev/null; then
+    echo "Warning: Direct import verification failed; bindings installed."
+else
+    echo "rgbmatrix verification successful!"
+fi
 
 # If 64-bit (arm64), also install piomatter for Raspberry Pi 5 support
 if [ "$ARCH" = "arm64" ]; then
