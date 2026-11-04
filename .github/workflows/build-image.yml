@@ -27,13 +27,11 @@ jobs:
 
       - name: Checkout custom stages
         uses: actions/checkout@v4
-        with:
-          path: custom-stages
 
       - name: Copy custom stage to pi-gen
         run: |
-          cp -r custom-stages/stage2-hobbyticker pi-gen/
-          cp custom-stages/config pi-gen/config
+          cp -r stage2-hobbyticker pi-gen/
+          cp config pi-gen/config
 
       - name: Build image
         uses: usimd/pi-gen-action@v1
