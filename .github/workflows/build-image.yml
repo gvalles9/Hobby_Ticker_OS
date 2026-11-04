@@ -1,0 +1,96 @@
+name: Build Hobby Ticker OS Image
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly rebuild on Monday at 2:00 AM UTC
+
+jobs:
+  build-image:
+    strategy:
+      matrix:
+        arch: [arm64, armhf]
+        runs-on: [ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runs-on }}
+    
+    steps:
+      - name: Checkout pi-gen
+        uses: actions/checkout@v4
+        with:
+          repository: RPi-Distro/pi-gen
+          path: pi-gen
+          ref: ${{ matrix.arch == 'arm64' && 'arm64' || 'master' }}
+
+      - name: Checkout custom stages
+        uses: actions/checkout@v4
+        with:
+          path: custom-stages
+
+      - name: Copy custom stage to pi-gen
+        run: |
+          cp -r custom-stages/stage2-hobbyticker pi-gen/
+          cp custom-stages/config pi-gen/config
+
+      - name: Build image
+        uses: usimd/pi-gen-action@v1
+        with:
+          pi-gen-dir: pi-gen
+          image-name: hobbyticker-${{ matrix.arch }}
+          stage-list: "stage0 stage1 stage2 stage2-hobbyticker"
+          export-last-stage-only: true
+          enable-noobs: false
+
+      - name: Generate SHA256 checksum
+        run: |
+          cd pi-gen/deploy
+          sha256sum *.img > SHA256SUMS
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hobbyticker-${{ matrix.arch }}
+          path: |
+            pi-gen/deploy/*.img
+            pi-gen/deploy/SHA256SUMS
+
+  release:
+    needs: build-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.0
+          name: Hobby Ticker OS v1.0.0
+          body: |
+            Hobby Ticker OS - Prebuilt Raspberry Pi OS image
+            
+            Based on Colin Waddell's FlightTracker project.
+            
+            ## Images
+            - hobbyticker-arm64.img.xz - For Raspberry Pi 4/5 (64-bit)
+            - hobbyticker-armhf.img.xz - For Raspberry Pi 3 (32-bit)
+            
+            ## Installation
+            1. Add custom repository to Raspberry Pi Imager:
+               https://raw.githubusercontent.com/gvalles9/Hobby_Ticker_OS/main/os_list.json
+            2. Select Hobby Ticker OS from the OS list
+            3. Set your Wi-Fi details and hostname
+            4. Flash to SD card
+            5. Boot and configure at http://hobbyticker.local:8584
+          files: artifacts/**/*.img.xz
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
