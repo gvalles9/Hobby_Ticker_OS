@@ -4,8 +4,8 @@
 
 IMG_NAME='hobbyticker'
 
-# Use standard stages followed by custom hobbyticker stage
-STAGE_LIST="stage0 stage1 stage2 stage2-hobbyticker"
+# Use standard stages (stage2 contains our custom hobbyticker stage)
+STAGE_LIST="stage0 stage1 stage2"
 
 # Deploy compressed images (.img.xz)
 DEPLOY_COMPRESSION=xz

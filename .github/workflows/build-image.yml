@@ -36,7 +36,7 @@ jobs:
 
       - name: Copy custom stage to pi-gen
         run: |
-          cp -r stage2-hobbyticker pi-gen/
+          cp -r stage2 pi-gen/
           cp config pi-gen/config
 
       - name: Build image
@@ -44,7 +44,7 @@ jobs:
         with:
           pi-gen-dir: pi-gen
           image-name: ${{ matrix.image_name }}
-          stage-list: "stage0 stage1 stage2 stage2-hobbyticker"
+          stage-list: "stage0 stage1 stage2"
           export-last-stage-only: true
           enable-noobs: false
 
