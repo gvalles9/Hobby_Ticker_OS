@@ -1,35 +1,48 @@
 {
-  "name": "Hobby Ticker OS",
-  "description": "Prebuilt Raspberry Pi OS image for Hobby Ticker - a fork of Colin Waddell's FlightTracker. Flash with Raspberry Pi Imager, configure via web interface, no command line required.",
-  "icon": null,
-  "release_date": "2024-01-01",
-  "website": "https://github.com/gvalles9/Hobby_Ticker_OS",
-  "products": [
+  "imager": {
+    "version": "v4"
+  },
+  "os_list": [
     {
-      "name": "Hobby Ticker OS (32-bit)",
-      "description": "For Raspberry Pi 3 - 32-bit image with Hobby Ticker pre-installed",
+      "name": "Hobby Ticker OS",
+      "description": "Prebuilt Raspberry Pi OS image for Hobby Ticker - a fork of Colin Waddell's FlightTracker. Flash with Raspberry Pi Imager, configure via web interface, no command line required.",
       "icon": null,
-      "url": "https://github.com/gvalles9/Hobby_Ticker_OS/releases/download/v1.0.0/hobbyticker-32bit.img.xz",
-      "extract_size": 4294967296,
-      "extract_sha256": "",
-      "image_download_size": 0,
-      "image_download_sha256": "",
-      "image_download_size": 0,
-      "image_download_sha256": "",
-      "image_download_size": 0
-    },
-    {
-      "name": "Hobby Ticker OS (64-bit)",
-      "description": "For Raspberry Pi 4/5 - 64-bit image with Hobby Ticker pre-installed",
-      "icon": null,
-      "url": "https://github.com/gvalles9/Hobby_Ticker_OS/releases/download/v1.0.0/hobbyticker-64bit.img.xz",
-      "extract_size": 4294967296,
-      "extract_sha256": "",
-      "image_download_size": 0,
-      "image_download_sha256": "",
-      "image_download_size": 0,
-      "image_download_sha256": "",
-      "image_download_size": 0
+      "website": "https://github.com/gvalles9/Hobby_Ticker_OS",
+      "subitems": [
+        {
+          "name": "Hobby Ticker OS (32-bit)",
+          "description": "For Raspberry Pi 3 (and Pi 4 / Pi Zero 2 W in 32-bit mode) - pre-installed Hobby Ticker with rgbmatrix drivers",
+          "icon": null,
+          "url": "https://github.com/gvalles9/Hobby_Ticker_OS/releases/download/v1.0.0/hobbyticker-32bit.img.xz",
+          "extract_size": 4294967296,
+          "extract_sha256": "",
+          "image_download_size": 0,
+          "image_download_sha256": "",
+          "release_date": "2026-11-04",
+          "init_format": "systemd",
+          "devices": [
+            "pi3-32bit",
+            "pi4-32bit",
+            "pi02w-32bit"
+          ]
+        },
+        {
+          "name": "Hobby Ticker OS (64-bit)",
+          "description": "For Raspberry Pi 4 and 5 - 64-bit image with Hobby Ticker and drivers pre-installed",
+          "icon": null,
+          "url": "https://github.com/gvalles9/Hobby_Ticker_OS/releases/download/v1.0.0/hobbyticker-64bit.img.xz",
+          "extract_size": 4294967296,
+          "extract_sha256": "",
+          "image_download_size": 0,
+          "image_download_sha256": "",
+          "release_date": "2026-11-04",
+          "init_format": "systemd",
+          "devices": [
+            "pi4-64bit",
+            "pi5-64bit"
+          ]
+        }
+      ]
     }
   ]
 }

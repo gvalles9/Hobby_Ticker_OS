@@ -12,21 +12,27 @@ on:
 jobs:
   build-image:
     strategy:
+      fail-fast: false
       matrix:
-        arch: [arm64, armhf]
-        runs-on: [ubuntu-24.04-arm]
-    runs-on: ${{ matrix.runs-on }}
-    
+        include:
+          - arch: armhf
+            image_name: hobbyticker-32bit
+            pi_gen_ref: master
+          - arch: arm64
+            image_name: hobbyticker-64bit
+            pi_gen_ref: arm64
+    runs-on: ubuntu-24.04-arm
+
     steps:
+      - name: Checkout custom repository
+        uses: actions/checkout@v4
+
       - name: Checkout pi-gen
         uses: actions/checkout@v4
         with:
           repository: RPi-Distro/pi-gen
           path: pi-gen
-          ref: ${{ matrix.arch == 'arm64' && 'arm64' || 'master' }}
-
-      - name: Checkout custom stages
-        uses: actions/checkout@v4
+          ref: ${{ matrix.pi_gen_ref }}
 
       - name: Copy custom stage to pi-gen
         run: |
@@ -37,56 +43,122 @@ jobs:
         uses: usimd/pi-gen-action@v1
         with:
           pi-gen-dir: pi-gen
-          image-name: hobbyticker-${{ matrix.arch }}
+          image-name: ${{ matrix.image_name }}
           stage-list: "stage0 stage1 stage2 stage2-hobbyticker"
           export-last-stage-only: true
           enable-noobs: false
 
-      - name: Generate SHA256 checksum
+      - name: Prepare deploy artifacts and calculate SHA256
         run: |
           cd pi-gen/deploy
-          sha256sum *.img > SHA256SUMS
+          IMG_XZ=$(ls *.img.xz 2>/dev/null | head -n 1 || true)
+          if [ -n "$IMG_XZ" ] && [ "$IMG_XZ" != "${{ matrix.image_name }}.img.xz" ]; then
+            mv "$IMG_XZ" "${{ matrix.image_name }}.img.xz"
+          fi
+          RAW_IMG=$(ls *.img 2>/dev/null | head -n 1 || true)
+          if [ -n "$RAW_IMG" ]; then
+            sha256sum "$RAW_IMG" > "${{ matrix.image_name }}.img.sha256"
+            stat -c%s "$RAW_IMG" > "${{ matrix.image_name }}.img.size"
+          fi
+          sha256sum "${{ matrix.image_name }}.img.xz" > "${{ matrix.image_name }}.img.xz.sha256"
+          stat -c%s "${{ matrix.image_name }}.img.xz" > "${{ matrix.image_name }}.img.xz.size"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: hobbyticker-${{ matrix.arch }}
+          name: ${{ matrix.image_name }}
           path: |
-            pi-gen/deploy/*.img
-            pi-gen/deploy/SHA256SUMS
+            pi-gen/deploy/${{ matrix.image_name }}.img.xz
+            pi-gen/deploy/*.sha256
+            pi-gen/deploy/*.size
 
   release:
     needs: build-image
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+
     steps:
-      - name: Download artifacts
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Update os_list.json with generated hashes and sizes
+        run: |
+          python3 - <<'EOF'
+          import json, os, glob
+
+          with open("os_list.json", "r") as f:
+              data = json.load(f)
+
+          products = data.get("os_list", [{}])[0].get("subitems", [])
+
+          for item in products:
+              name = item.get("name", "")
+              target_prefix = "hobbyticker-32bit" if "32-bit" in name else "hobbyticker-64bit"
+
+              xz_hash_files = glob.glob(f"artifacts/**/{target_prefix}.img.xz.sha256", recursive=True)
+              xz_size_files = glob.glob(f"artifacts/**/{target_prefix}.img.xz.size", recursive=True)
+              raw_hash_files = glob.glob(f"artifacts/**/{target_prefix}.img.sha256", recursive=True)
+              raw_size_files = glob.glob(f"artifacts/**/{target_prefix}.img.size", recursive=True)
+
+              if xz_hash_files and os.path.exists(xz_hash_files[0]):
+                  with open(xz_hash_files[0]) as hf:
+                      item["image_download_sha256"] = hf.read().split()[0].strip()
+
+              if xz_size_files and os.path.exists(xz_size_files[0]):
+                  with open(xz_size_files[0]) as sf:
+                      item["image_download_size"] = int(sf.read().strip())
+
+              if raw_hash_files and os.path.exists(raw_hash_files[0]):
+                  with open(raw_hash_files[0]) as hf:
+                      item["extract_sha256"] = hf.read().split()[0].strip()
+
+              if raw_size_files and os.path.exists(raw_size_files[0]):
+                  with open(raw_size_files[0]) as sf:
+                      item["extract_size"] = int(sf.read().strip())
+
+          with open("os_list.json", "w") as f:
+              json.dump(data, f, indent=2)
+
+          print("Updated os_list.json successfully:")
+          print(json.dumps(data, indent=2))
+          EOF
+
+      - name: Commit updated os_list.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add os_list.json
+          git commit -m "Auto-update os_list.json checksums and sizes [skip ci]" || echo "No changes to commit"
+          git push origin main || echo "Git push skipped or failed"
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0
           name: Hobby Ticker OS v1.0.0
           body: |
-            Hobby Ticker OS - Prebuilt Raspberry Pi OS image
-            
-            Based on Colin Waddell's FlightTracker project.
-            
-            ## Images
-            - hobbyticker-arm64.img.xz - For Raspberry Pi 4/5 (64-bit)
-            - hobbyticker-armhf.img.xz - For Raspberry Pi 3 (32-bit)
-            
-            ## Installation
-            1. Add custom repository to Raspberry Pi Imager:
-               https://raw.githubusercontent.com/gvalles9/Hobby_Ticker_OS/main/os_list.json
-            2. Select Hobby Ticker OS from the OS list
-            3. Set your Wi-Fi details and hostname
-            4. Flash to SD card
-            5. Boot and configure at http://hobbyticker.local:8584
+            # Hobby Ticker OS v1.0.0
+
+            Prebuilt Raspberry Pi OS images with Hobby Ticker pre-installed.
+
+            ## Available Images
+            - **hobbyticker-32bit.img.xz** — For Raspberry Pi 3 (and Pi 4 / Pi Zero 2 W in 32-bit mode)
+            - **hobbyticker-64bit.img.xz** — For Raspberry Pi 4 and Raspberry Pi 5 (64-bit mode)
+
+            ## Flashing with Raspberry Pi Imager
+            1. Open **Raspberry Pi Imager**
+            2. Go to **App Options → Content Repository → Custom URL**
+            3. Enter: `https://raw.githubusercontent.com/gvalles9/Hobby_Ticker_OS/main/os_list.json`
+            4. Select **Hobby Ticker OS** from the menu
+            5. Configure your Wi-Fi credentials and hostname
+            6. Flash and boot!
           files: artifacts/**/*.img.xz
           draft: false
           prerelease: false

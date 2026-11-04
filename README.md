@@ -5,9 +5,9 @@ Hobby Ticker OS is a prebuilt Raspberry Pi OS image with Hobby Ticker pre-instal
 ## Features
 
 - Pre-installed Hobby Ticker application
-- RGB matrix drivers (Adafruit)
+- RGB matrix drivers (hzeller rgbmatrix for Pi 3/4, Adafruit piomatter for Pi 5)
 - Web-based configuration interface
-- First-boot Wi-Fi setup
+- First-boot Wi-Fi setup hotspot
 - No command line required
 
 ## Installation
@@ -32,10 +32,10 @@ Download the image from the [Releases](https://github.com/gvalles9/Hobby_Ticker_
 ## Hardware Requirements
 
 - Raspberry Pi 3, 4, or 5
-- Adafruit RGB Matrix Bonnet
-- 64x32 RGB LED matrix panel(s)
+- Adafruit RGB Matrix Bonnet or HAT
+- 64x32 RGB LED matrix panel(s) (three panels chained horizontally for standard 192x32 layout)
 - MicroSD card (8GB minimum, Class 10 recommended)
-- 5V power supply (3A recommended for Pi 4/5)
+- 5V power supply (3A+ recommended)
 
 ## Configuration
 

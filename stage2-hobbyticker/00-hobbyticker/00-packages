@@ -1,0 +1,17 @@
+git
+curl
+avahi-daemon
+network-manager
+openssl
+python3
+python3-venv
+python3-pip
+python3-dev
+cython3
+libcap2-bin
+libffi-dev
+libopenjp2-7
+libopenblas0
+libjpeg62-turbo
+libtiff6
+libxcb1

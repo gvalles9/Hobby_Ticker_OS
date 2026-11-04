@@ -4,10 +4,10 @@
 
 IMG_NAME='hobbyticker'
 
-# Use the standard stage list (stage2 contains our custom hobbyticker stage)
-STAGE_LIST="stage0 stage1 stage2"
+# Use standard stages followed by custom hobbyticker stage
+STAGE_LIST="stage0 stage1 stage2 stage2-hobbyticker"
 
-# Disable compression for faster builds (can be re-enabled for production)
+# Deploy compressed images (.img.xz)
 DEPLOY_COMPRESSION=xz
 
 # Set hostname
@@ -16,7 +16,7 @@ HOSTNAME=hobbyticker
 # Enable SSH
 ENABLE_SSH=1
 
-# Set first user (pi user with default password)
+# Set default user
 FIRST_USER_NAME=pi
 FIRST_USER_PASS=raspberry
 
