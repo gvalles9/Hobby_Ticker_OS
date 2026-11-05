@@ -31,7 +31,7 @@ jobs:
           custom-stages-repo: ${{ github.repository }}
           custom-stages-ref: ${{ github.ref }}
           image-name: ${{ matrix.image_name }}
-          stage-list: "stage0 stage1 stage2-hobbyticker"
+          stage-list: "stage0 stage1 stage2"
           export-last-stage-only: true
           enable-noobs: false
 
