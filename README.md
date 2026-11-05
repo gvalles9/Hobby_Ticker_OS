@@ -37,9 +37,19 @@ Download the image from the [Releases](https://github.com/gvalles9/Hobby_Ticker_
 - MicroSD card (8GB minimum, Class 10 recommended)
 - 5V power supply (3A+ recommended)
 
+## First Boot
+
+After flashing and booting your Pi:
+
+1. The Pi will connect to your Wi-Fi network (using credentials set in Imager)
+2. The first-boot installer will automatically run and install Hobby Ticker
+3. This may take 5-15 minutes depending on your Pi model
+4. The Pi will reboot automatically when installation completes
+5. Hobby Ticker will start automatically after reboot
+
 ## Configuration
 
-After first boot, access the web interface at:
+After installation completes, access the Hobby Ticker web interface at:
 - `http://hobbyticker.local:8584` (if mDNS is working)
 - `http://<your-pi-ip>:8584` (check your router for the IP)
 

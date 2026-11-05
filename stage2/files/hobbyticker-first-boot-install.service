@@ -1,0 +1,16 @@
+[Unit]
+Description=Hobby Ticker First-Boot Installer
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=!/opt/hobbyticker-installer/.installed
+
+[Service]
+Type=oneshot
+ExecStart=/opt/hobbyticker-installer/first-boot-install.sh
+User=root
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hobbyticker-installer
+
+[Install]
+WantedBy=multi-user.target
