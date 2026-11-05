@@ -77,6 +77,10 @@ jobs:
           cd pi-gen
           PRESERVE_CONTAINER=1 ./build-docker.sh
 
+      - name: Cleanup build artifacts to free disk space
+        run: |
+          rm -rf pi-gen/work
+
       - name: Prepare deploy artifacts and calculate SHA256
         run: |
           cd pi-gen/deploy
