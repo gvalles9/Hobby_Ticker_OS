@@ -55,7 +55,7 @@ jobs:
           rm -rf /tmp/rpi-keyring /tmp/rpi-keyring.deb /tmp/raspbian-keyring /tmp/raspbian-keyring.deb /tmp/merged.gpg*
 
           cp -r stage2 pi-gen/stage-hobbyticker
-          chmod +x pi-gen/stage-hobbyticker/00-run.sh pi-gen/stage-hobbyticker/02-run-chroot.sh pi-gen/stage-hobbyticker/03-run-chroot.sh 2>/dev/null || true
+          chmod +x pi-gen/stage-hobbyticker/prerun.sh pi-gen/stage-hobbyticker/00-hobbyticker/01-run.sh 2>/dev/null || true
 
           {
             echo 'IMG_NAME="hobbyticker-os-${{ matrix.arch }}"'
