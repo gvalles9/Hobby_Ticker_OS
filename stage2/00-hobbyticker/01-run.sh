@@ -4,7 +4,7 @@ echo "=== Installing Hobby Ticker ==="
 
 # Install required packages
 apt-get update
-apt-get install -y build-essential git curl avahi-daemon network-manager openssl python3 python3-venv python3-pip python3-dev cython3 libcap2-bin libffi-dev libopenjp2-7 libopenblas0 libjpeg62-turbo libtiff6 libxcb1
+apt-get install -y build-essential git curl avahi-daemon network-manager openssl python3 python3-venv python3-pip python3-dev python3-setuptools cython3 libcap2-bin libffi-dev libopenjp2-7 libopenblas0 libjpeg62-turbo libtiff6 libxcb1
 
 INSTALL_DIR="/home/pi/FlightTracker"
 RGB_MATRIX_DIR="/home/pi/rpi-rgb-led-matrix"
