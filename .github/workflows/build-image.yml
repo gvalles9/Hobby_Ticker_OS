@@ -18,22 +18,64 @@ jobs:
           - arch: armhf
             image_name: hobbyticker-32bit
             pi_gen_ref: master
+            runner: ubuntu-24.04
           - arch: arm64
             image_name: hobbyticker-64bit
             pi_gen_ref: arm64
-    runs-on: ubuntu-latest
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
 
     steps:
-      - name: Build image
-        uses: usimd/pi-gen-action@v1
-        with:
-          pi-gen-ref: ${{ matrix.pi_gen_ref }}
-          custom-stages-repo: ${{ github.repository }}
-          custom-stages-ref: ${{ github.ref }}
-          image-name: ${{ matrix.image_name }}
-          stage-list: "stage0 stage1 stage2"
-          export-last-stage-only: true
-          enable-noobs: false
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup qemu for armhf cross-build
+        if: matrix.arch == 'armhf'
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install qemu-user-static binfmt-support
+          sudo apt-get -y remove qemu-user-binfmt 2>/dev/null || true
+          sudo ln -sf /usr/bin/qemu-arm-static /usr/local/bin/qemu-arm
+          sudo mount -t binfmt_misc binfmt_misc /proc/sys/fs/binfmt_misc 2>/dev/null || true
+          echo ':qemu-arm-rpi:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-arm-static:F' | sudo tee /proc/sys/fs/binfmt_misc/register >/dev/null 2>&1 || true
+
+      - name: Clone pi-gen and build image
+        run: |
+          set -e
+
+          git clone --depth 1 -b ${{ matrix.pi_gen_ref }} https://github.com/RPi-Distro/pi-gen.git pi-gen
+
+          curl -sL 'http://archive.raspberrypi.com/debian/pool/main/r/raspberrypi-archive-keyring/raspberrypi-archive-keyring_2025.1+rpt1_all.deb' -o /tmp/rpi-keyring.deb
+          dpkg-deb -x /tmp/rpi-keyring.deb /tmp/rpi-keyring
+          curl -sL 'http://raspbian.raspberrypi.com/raspbian/pool/main/r/raspbian-archive-keyring/raspbian-archive-keyring_20120528.4_all.deb' -o /tmp/raspbian-keyring.deb
+          dpkg-deb -x /tmp/raspbian-keyring.deb /tmp/raspbian-keyring
+          gpg --no-default-keyring --keyring /tmp/merged.gpg --import /tmp/rpi-keyring/usr/share/keyrings/raspberrypi-archive-keyring.pgp 2>/dev/null
+          gpg --no-default-keyring --keyring /tmp/merged.gpg --import /tmp/raspbian-keyring/usr/share/keyrings/raspbian-archive-keyring.gpg 2>/dev/null
+          gpg --no-default-keyring --keyring /tmp/merged.gpg --export > pi-gen/stage0/files/raspberrypi.gpg
+          rm -rf /tmp/rpi-keyring /tmp/rpi-keyring.deb /tmp/raspbian-keyring /tmp/raspbian-keyring.deb /tmp/merged.gpg*
+
+          cp -r stage2 pi-gen/stage-hobbyticker
+          chmod +x pi-gen/stage-hobbyticker/00-run.sh pi-gen/stage-hobbyticker/02-run-chroot.sh pi-gen/stage-hobbyticker/03-run-chroot.sh 2>/dev/null || true
+
+          {
+            echo 'IMG_NAME="hobbyticker-os-${{ matrix.arch }}"'
+            echo 'RELEASE="trixie"'
+            echo 'LOCALE_DEFAULT="en_US.UTF-8"'
+            echo 'TARGET_HOSTNAME="hobbyticker"'
+            echo 'KEYBOARD_KEYMAP="us"'
+            echo 'KEYBOARD_LAYOUT="English (US)"'
+            echo 'TIMEZONE_DEFAULT="UTC"'
+            echo 'FIRST_USER_NAME="pi"'
+            echo 'FIRST_USER_PASS="raspberry"'
+            echo 'ENABLE_SSH=1'
+            echo 'STAGE_LIST="stage0 stage1 stage2 stage-hobbyticker"'
+            echo 'DEPLOY_COMPRESSION="xz"'
+          } > pi-gen/config
+
+          touch pi-gen/stage-hobbyticker/EXPORT_IMAGE
+
+          cd pi-gen
+          PRESERVE_CONTAINER=1 ./build-docker.sh
 
       - name: Prepare deploy artifacts and calculate SHA256
         run: |
