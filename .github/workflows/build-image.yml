@@ -21,7 +21,7 @@ jobs:
           - arch: arm64
             image_name: hobbyticker-64bit
             pi_gen_ref: arm64
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout custom repository
