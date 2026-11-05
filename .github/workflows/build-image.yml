@@ -40,13 +40,9 @@ jobs:
           cp config pi-gen/config
 
       - name: Build image
-        uses: usimd/pi-gen-action@v1
-        with:
-          pi-gen-dir: pi-gen
-          image-name: ${{ matrix.image_name }}
-          stage-list: "stage0 stage1 stage2"
-          export-last-stage-only: true
-          enable-noobs: false
+        run: |
+          cd pi-gen
+          ./build-docker.sh
 
       - name: Prepare deploy artifacts and calculate SHA256
         run: |
