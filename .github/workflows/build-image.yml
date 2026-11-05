@@ -24,25 +24,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout custom repository
-        uses: actions/checkout@v4
-
-      - name: Checkout pi-gen
-        uses: actions/checkout@v4
-        with:
-          repository: RPi-Distro/pi-gen
-          path: pi-gen
-          ref: ${{ matrix.pi_gen_ref }}
-
-      - name: Copy custom stage to pi-gen
-        run: |
-          cp -r stage2-hobbyticker pi-gen/stage2
-          cp config pi-gen/config
-
       - name: Build image
-        run: |
-          cd pi-gen
-          ./build-docker.sh
+        uses: usimd/pi-gen-action@v1
+        with:
+          pi-gen-ref: ${{ matrix.pi_gen_ref }}
+          custom-stages-repo: ${{ github.repository }}
+          custom-stages-ref: ${{ github.ref }}
+          image-name: ${{ matrix.image_name }}
+          stage-list: "stage0 stage1 stage2-hobbyticker"
+          export-last-stage-only: true
+          enable-noobs: false
 
       - name: Prepare deploy artifacts and calculate SHA256
         run: |
