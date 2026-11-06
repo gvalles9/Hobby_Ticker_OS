@@ -15,6 +15,20 @@ fi
 
 echo "=== Starting Hobby Ticker First-Boot Installation ==="
 
+# Sanity-check the build tools the image normally provides. This gives a clear
+# message if the script is ever run by hand on a stock Raspberry Pi OS install.
+missing=""
+for cmd in git python3 make gcc dpkg; do
+    command -v "$cmd" >/dev/null 2>&1 || missing="$missing $cmd"
+done
+if [ -n "$missing" ]; then
+    echo "Error: required commands are missing:$missing"
+    echo "Install them first, for example:"
+    echo "  sudo apt-get update"
+    echo "  sudo apt-get install -y build-essential git python3 python3-venv python3-dev cython3"
+    exit 1
+fi
+
 # Ensure pi user and directory exist
 mkdir -p "$INSTALL_DIR"
 
@@ -103,8 +117,9 @@ fi
 mkdir -p /opt/hobbyticker-installer
 touch "$SENTINEL_FILE"
 
-# Disable this service
-systemctl disable hobbyticker-first-boot-install.service
+# Disable this service (ignore errors when the unit is not installed, e.g.
+# when this script is run manually on a stock Raspberry Pi OS install)
+systemctl disable hobbyticker-first-boot-install.service 2>/dev/null || true
 
 echo "=== Hobby Ticker installation completed successfully ==="
 echo "Rebooting to start Hobby Ticker..."

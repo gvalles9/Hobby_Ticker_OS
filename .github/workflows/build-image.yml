@@ -114,18 +114,38 @@ jobs:
 
       - name: Prepare deploy artifacts and calculate SHA256
         run: |
+          set -e
           cd pi-gen/deploy
-          IMG_XZ=$(ls *.img.xz 2>/dev/null | head -n 1 || true)
-          if [ -n "$IMG_XZ" ] && [ "$IMG_XZ" != "${{ matrix.image_name }}.img.xz" ]; then
-            mv "$IMG_XZ" "${{ matrix.image_name }}.img.xz"
+          echo "Deploy directory contents:"
+          ls -la
+
+          # pi-gen exports one image per stage that contains EXPORT_IMAGE:
+          #   <date>-<img_name>-lite.img.xz        (plain Raspberry Pi OS)
+          #   <date>-<img_name>-hobbyticker.img.xz (our custom stage)
+          # Select the Hobby Ticker image explicitly. Picking "the first *.img.xz"
+          # is what previously published a plain Raspberry Pi OS image that
+          # happened to be named hobbyticker-*.img.xz.
+          IMG_XZ=$(ls *-hobbyticker.img.xz 2>/dev/null | head -n 1 || true)
+          if [ -z "$IMG_XZ" ]; then
+            echo "ERROR: no *-hobbyticker.img.xz was produced by pi-gen." >&2
+            echo "Refusing to publish a stock Raspberry Pi OS image." >&2
+            exit 1
           fi
-          RAW_IMG=$(ls *.img 2>/dev/null | head -n 1 || true)
-          if [ -n "$RAW_IMG" ]; then
-            sha256sum "$RAW_IMG" > "${{ matrix.image_name }}.img.sha256"
-            stat -c%s "$RAW_IMG" > "${{ matrix.image_name }}.img.size"
-          fi
+          mv "$IMG_XZ" "${{ matrix.image_name }}.img.xz"
+
           sha256sum "${{ matrix.image_name }}.img.xz" > "${{ matrix.image_name }}.img.xz.sha256"
           stat -c%s "${{ matrix.image_name }}.img.xz" > "${{ matrix.image_name }}.img.xz.size"
+
+          # Raspberry Pi Imager also uses the uncompressed image size/hash
+          # (extract_size / extract_sha256 in os_list.json). deploy/ only keeps
+          # the .xz, so derive them by decompressing once.
+          xz -dc "${{ matrix.image_name }}.img.xz" > "${{ matrix.image_name }}.img"
+          sha256sum "${{ matrix.image_name }}.img" > "${{ matrix.image_name }}.img.sha256"
+          stat -c%s "${{ matrix.image_name }}.img" > "${{ matrix.image_name }}.img.size"
+          rm -f "${{ matrix.image_name }}.img"
+
+          echo "Artifacts:"
+          ls -la *.img.xz *.sha256 *.size
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
