@@ -19,7 +19,7 @@
           "image_download_size": 630649796,
           "image_download_sha256": "3dc7a259a3e526e2d1219ae0011633382a4cdf83acd9893943db1a8725b1f888",
           "release_date": "2026-11-04",
-          "init_format": "systemd",
+          "init_format": "cloudinit-rpi",
           "devices": [
             "pi3-32bit",
             "pi4-32bit",
@@ -36,7 +36,7 @@
           "image_download_size": 640890272,
           "image_download_sha256": "d6f324a45bcaa5b0f510fdc97e4e630ef35475fe7644bbdc301d647570bb4a5d",
           "release_date": "2026-11-04",
-          "init_format": "systemd",
+          "init_format": "cloudinit-rpi",
           "devices": [
             "pi4-64bit",
             "pi5-64bit"
