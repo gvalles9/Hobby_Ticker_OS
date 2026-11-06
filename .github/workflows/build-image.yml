@@ -26,6 +26,27 @@ jobs:
     runs-on: ${{ matrix.runner }}
 
     steps:
+      - name: Free up disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h /
+          # These pre-installed toolchains are not needed to build a Raspberry
+          # Pi image and together use tens of GB on hosted runners.
+          sudo rm -rf \
+            /usr/local/lib/android \
+            /usr/share/dotnet \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL \
+            /usr/local/share/boost \
+            /usr/local/share/powershell \
+            /usr/share/swift \
+            /opt/microsoft \
+            /opt/google
+          sudo apt-get clean
+          sudo docker system prune -af --volumes || true
+          echo "Disk space after cleanup:"
+          df -h /
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -74,12 +95,22 @@ jobs:
 
           touch pi-gen/stage-hobbyticker/EXPORT_IMAGE
 
+          df -h /
           cd pi-gen
-          PRESERVE_CONTAINER=1 ./build-docker.sh
+          # Do not preserve the build container. It holds the entire pi-gen
+          # work/ tree (several GB) and would otherwise stay on disk after the
+          # image has been copied out.
+          ./build-docker.sh
+          df -h /
 
       - name: Cleanup build artifacts to free disk space
         run: |
-          rm -rf pi-gen/work
+          # pi-gen runs inside Docker, so work/ lives in the container's
+          # writable layer, not in pi-gen/work on the host. Removing the
+          # container and dangling images is what actually frees the space.
+          docker rm -fv pigen_work 2>/dev/null || true
+          docker system prune -af --volumes || true
+          df -h /
 
       - name: Prepare deploy artifacts and calculate SHA256
         run: |
