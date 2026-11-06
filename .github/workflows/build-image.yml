@@ -78,6 +78,10 @@ jobs:
           cp -r stage2 pi-gen/stage-hobbyticker
           chmod +x pi-gen/stage-hobbyticker/prerun.sh pi-gen/stage-hobbyticker/00-hobbyticker/01-run.sh 2>/dev/null || true
 
+          # SSH is intentionally disabled: pi-gen installs openssh-server but
+          # runs `systemctl disable ssh` when ENABLE_SSH=0, so the giveaway
+          # image has no remote login out of the box. Re-enable locally with
+          # `sudo systemctl enable --now ssh` if troubleshooting is needed.
           {
             echo 'IMG_NAME="hobbyticker-os-${{ matrix.arch }}"'
             echo 'RELEASE="trixie"'
@@ -88,7 +92,7 @@ jobs:
             echo 'TIMEZONE_DEFAULT="UTC"'
             echo 'FIRST_USER_NAME="pi"'
             echo 'FIRST_USER_PASS="raspberry"'
-            echo 'ENABLE_SSH=1'
+            echo 'ENABLE_SSH=0'
             echo 'STAGE_LIST="stage0 stage1 stage2 stage-hobbyticker"'
             echo 'DEPLOY_COMPRESSION="xz"'
           } > pi-gen/config

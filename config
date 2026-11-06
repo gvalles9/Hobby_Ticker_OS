@@ -13,8 +13,10 @@ DEPLOY_COMPRESSION=xz
 # Set hostname
 HOSTNAME=hobbyticker
 
-# Enable SSH
-ENABLE_SSH=1
+# Disable SSH in the released image. pi-gen still installs openssh-server,
+# but with ENABLE_SSH=0 it runs `systemctl disable ssh`, so the image does not
+# accept remote logins out of the box. This is a giveaway build.
+ENABLE_SSH=0
 
 # Set default user
 FIRST_USER_NAME=pi
