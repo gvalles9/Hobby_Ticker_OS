@@ -16,8 +16,8 @@
           "url": "https://github.com/gvalles9/Hobby_Ticker_OS/releases/download/v1.0.0/hobbyticker-32bit.img.xz",
           "extract_size": 4294967296,
           "extract_sha256": "",
-          "image_download_size": 0,
-          "image_download_sha256": "",
+          "image_download_size": 605286408,
+          "image_download_sha256": "5d96a21a48d1bb65bcbdedc94aa5649f91d2a0b646cfc1b6e03bdf8675f1ac74",
           "release_date": "2026-11-04",
           "init_format": "systemd",
           "devices": [
@@ -33,8 +33,8 @@
           "url": "https://github.com/gvalles9/Hobby_Ticker_OS/releases/download/v1.0.0/hobbyticker-64bit.img.xz",
           "extract_size": 4294967296,
           "extract_sha256": "",
-          "image_download_size": 0,
-          "image_download_sha256": "",
+          "image_download_size": 608486500,
+          "image_download_sha256": "416d35920ab4c5992f158fa2e6dd6fb26ca51a056623c19b3b699f835cba6d24",
           "release_date": "2026-11-04",
           "init_format": "systemd",
           "devices": [
