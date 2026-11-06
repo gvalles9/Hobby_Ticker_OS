@@ -14,27 +14,9 @@
 
 echo "=== Setting up Hobby Ticker OS ==="
 
-APT_PACKAGES="
-build-essential
-git
-curl
-avahi-daemon
-network-manager
-openssl
-python3
-python3-venv
-python3-pip
-python3-dev
-python3-setuptools
-cython3
-libcap2-bin
-libffi-dev
-libopenjp2-7
-libopenblas0
-libjpeg62-turbo
-libtiff6
-libxcb1
-"
+# Keep this on a single line: it is expanded inside a here-doc, where newlines
+# are preserved literally and would otherwise turn each package into a command.
+APT_PACKAGES="build-essential git curl avahi-daemon network-manager openssl python3 python3-venv python3-pip python3-dev python3-setuptools cython3 libcap2-bin libffi-dev libopenjp2-7 libopenblas0 libjpeg62-turbo libtiff6 libxcb1"
 
 # Install build/runtime dependencies inside the image.
 on_chroot << EOF
