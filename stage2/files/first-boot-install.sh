@@ -47,8 +47,13 @@ cd "$INSTALL_DIR"
 echo "Creating Python virtual environment..."
 python3 -m venv env
 
-# Upgrade pip and install common dependencies
-./env/bin/pip install --upgrade pip
+# Upgrade pip and install common dependencies.
+# Python 3.12+ no longer ships distutils, but hzeller's
+# bindings/python/setup.py still imports it (the build-python step below runs
+# that file). setuptools provides the distutils shim, so it has to exist inside
+# the venv before the matrix bindings are built. Without this the installer
+# fails with "ModuleNotFoundError: No module named 'distutils'".
+./env/bin/pip install --upgrade pip wheel "setuptools<81"
 echo "Installing Python dependencies from platforms/pi/requirements.txt..."
 ./env/bin/pip install -r platforms/pi/requirements.txt
 
