@@ -112,6 +112,14 @@ if [ -f "$INSTALL_DIR/assets/FlightTracker.service" ]; then
     systemctl enable FlightTracker.service
 fi
 
+# Install Wi-Fi recovery and the Admin SSH toggle helper. Keep this
+# non-fatal: a missing helper must never block the display installation.
+if [ -f "$INSTALL_DIR/platforms/common/install-wifi-setup.sh" ]; then
+    echo "Installing Wi-Fi recovery and remote-access helpers..."
+    bash "$INSTALL_DIR/platforms/common/install-wifi-setup.sh" pi "$INSTALL_DIR" || \
+        echo "Warning: optional Wi-Fi/remote-access setup failed; continuing."
+fi
+
 # Fix ownership
 chown -R pi:pi /home/pi/FlightTracker
 if [ -d "$RGB_MATRIX_DIR" ]; then

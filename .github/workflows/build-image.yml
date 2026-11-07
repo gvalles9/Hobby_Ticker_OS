@@ -9,6 +9,12 @@ on:
   schedule:
     - cron: '0 2 * * 1'  # Weekly rebuild on Monday at 2:00 AM UTC
 
+# A new build for the same branch supersedes an older one. Without this, two
+# runs can race to update the same release assets and os_list.json.
+concurrency:
+  group: build-image-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-image:
     strategy:
