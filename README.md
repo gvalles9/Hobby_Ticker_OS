@@ -7,7 +7,9 @@ Hobby Ticker OS is a prebuilt Raspberry Pi OS image with Hobby Ticker pre-instal
 - Pre-installed Hobby Ticker application
 - RGB matrix drivers (hzeller rgbmatrix for Pi 3/4, Adafruit piomatter for Pi 5)
 - Web-based configuration interface
+- Guided first-setup wizard (bonnet type, web password, optional preferences)
 - First-boot Wi-Fi setup hotspot
+- One-click Prepare for Handoff reset (Admin → Recovery)
 - SSH disabled by default; enable it from **Admin → Remote Access** if needed
 - No command line required
 
